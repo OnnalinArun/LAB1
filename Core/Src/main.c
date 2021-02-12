@@ -110,20 +110,24 @@ int main(void)
 
     SwitchState[0] = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
        //Press = Low , No = High
-       if(SwitchState[0] == GPIO_PIN_SET && SwitchState[1] == GPIO_PIN_RESET)
-       // set = high , reset = low
-       {
-        //Change Half Period of LED 1
-        if(LED1_Half_Period == 500)
-        {
-         LED1_Half_Period = 250;
-        }
-        else
-        {
-         LED1_Half_Period = 500;
-        }
-       }
-       SwitchState[1] = SwitchState[0];
+    if(SwitchState[0] == GPIO_PIN_SET && SwitchState[1] == GPIO_PIN_RESET)
+           // set = high , reset = low
+           {
+            //Change Half Period of LED 1
+            if(LED1_Half_Period == 500)
+            {
+             LED1_Half_Period = 1000;
+            }
+            else if(LED1_Half_Period >= 1000 && LED1_Half_Period <= 2000)
+            {
+             LED1_Half_Period += 1000;
+            }
+            else
+            {
+             LED1_Half_Period = 500;
+            }
+           }
+           SwitchState[1] = SwitchState[0];
    }
 
 
