@@ -116,6 +116,8 @@ int main(void) {
 			Check[0] = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3);
 			FIBO[0] = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5);
 			//Press = Low , No = High
+
+			//------------------------------------PART 1-------------------------------------//
 			if (SwitchState[1] == GPIO_PIN_SET
 					&& SwitchState[0] == GPIO_PIN_RESET) {
 				// set = high , reset = low
@@ -131,6 +133,8 @@ int main(void) {
 				}
 			}
 
+
+			//------------------------------------PART 2-------------------------------------//
 			if (Check[0] == GPIO_PIN_RESET && Check[1] == GPIO_PIN_SET) {
 				if (CheckS == 0) {
 					HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
@@ -141,6 +145,7 @@ int main(void) {
 				}
 			}
 
+			//------------------------------------PART 3-------------------------------------//
 			if (FIBO[0] == GPIO_PIN_RESET && FIBO[1] == GPIO_PIN_SET) {
 				if (FIBOS == 0) {
 					LED3_Half_Period = 500;
@@ -156,7 +161,8 @@ int main(void) {
 			FIBO[1] = FIBO[0];
 		}
 
-		//Run LED
+											//Run LED
+		//------------------------------------PART 1-------------------------------------//
 		if (HAL_GetTick() - TimeStamp >= LED1_Half_Period) //millisecond now time
 				{
 			TimeStamp = HAL_GetTick();
@@ -166,6 +172,8 @@ int main(void) {
 				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);
 			}
 		}
+
+		//------------------------------------PART 2-------------------------------------//
 		if (FIBOS == 1) {
 			if (HAL_GetTick() - TimeStamp3 >= LED3_Half_Period) //millisecond now time
 					{
@@ -179,6 +187,8 @@ int main(void) {
 				}
 			}
 		}
+
+		//------------------------------------PART 3-------------------------------------//
 		if (FIBOS == 0) {
 			if (HAL_GetTick() - TimeStamp3 >= LED3_Half_Period) //millisecond now time
 					{
