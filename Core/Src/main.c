@@ -93,7 +93,7 @@ int main(void) {
 	//*---------สร้างตัวแปร----------*//
 	GPIO_PinState SwitchState[2];  		// Now, Previous ----> ใช้สำหรับรับค่า 0 Now, 1 Previous [GPIO_PinState สามารถเขียนเป็น uint8_t ได้ แค่ให้รับตัวเลข 0 1 ได้]
 	uint16_t LED1_Half_Period = 1000;  	// 1 Hz (mS)
-	uint32_t TimeStamp = 0				;        //ตัวเก็บเวลา Typeเดียวกับ HAL_GetTick();
+	uint32_t TimeStamp = 0;				;        //ตัวเก็บเวลา Typeเดียวกับ HAL_GetTick()
 	uint32_t ButtonTimeStamp = 0;
 	GPIO_PinState Check[2];
 	uint32_t CheckS = 0;
