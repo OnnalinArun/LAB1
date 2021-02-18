@@ -129,9 +129,9 @@ int main(void) {
 			{
 				// set = high , reset = low
 				//Change Half Period of LED 1
-				if (LED1_Half_Period == 1000)				//NOW
+				if (LED1_Half_Period == 1000)		//NOW
 				{
-					LED1_Half_Period = 500;   				//NEXT
+					LED1_Half_Period = 500;   		//NEXT
 				}
 				else if (LED1_Half_Period == 500)
 				{
