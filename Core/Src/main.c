@@ -199,7 +199,7 @@ int main(void) {
 			}
 		}
 
-//------------------------------------PART 2-------------------------------------//
+//------------------------------------PART 3-------------------------------------//
 		if (FIBOS == 1)
 		{
 			if (HAL_GetTick() - TimeStamp3 >= LED3_Half_Period) //millisecond now time
@@ -218,7 +218,6 @@ int main(void) {
 			}
 		}
 
-//------------------------------------PART 3-------------------------------------//
 		if (FIBOS == 0)
 		{
 			if (HAL_GetTick() - TimeStamp3 >= LED3_Half_Period) //millisecond now time
