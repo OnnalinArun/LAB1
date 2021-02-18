@@ -89,9 +89,11 @@ int main(void) {
 	MX_USART2_UART_Init();
 	/* USER CODE BEGIN 2 */
 	//------------------------------------------------------
-	GPIO_PinState SwitchState[2];  //Now, Previous
-	uint16_t LED1_Half_Period = 1000;  // 1 Hz
-	uint32_t TimeStamp = 0;
+
+	//*---------สร้างตัวแปร----------*//
+	GPIO_PinState SwitchState[2];  		// Now, Previous ----> ใช้สำหรับรับค่า 0 Now, 1 Previous [GPIO_PinState สามารถเขียนเป็น uint8_t ได้ แค่ให้รับตัวเลข 0 1 ได้]
+	uint16_t LED1_Half_Period = 1000;  	// 1 Hz (mS)
+	uint32_t TimeStamp = 0				;        //ตัวเก็บเวลา Typeเดียวกับ HAL_GetTick();
 	uint32_t ButtonTimeStamp = 0;
 	GPIO_PinState Check[2];
 	uint32_t CheckS = 0;
@@ -105,83 +107,110 @@ int main(void) {
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-	while (1) {
-		HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
-		HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3);
-		HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5);
-		if (HAL_GetTick() - ButtonTimeStamp >= 100) {
-			ButtonTimeStamp = HAL_GetTick();
 
+	while (1) {
+//*----------HAL_GPIO_ReadPin()---------*//
+		HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10); //S1 PA10
+		HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3);  //S2 PB3
+		HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5);  //S3 PB5
+
+//*---------------ลดความเบลอของปุ่ม---------------*//
+		if (HAL_GetTick() - ButtonTimeStamp >= 100)
+		{
+			ButtonTimeStamp = HAL_GetTick(); 	// HAL_GetTick(); ---> อ่านเวลาที่เริ่มทำงานจนถึงปัจจุบัน(mS)
+//-----------------อ่านค่าของPinต่างๆ-------------------*//
 			SwitchState[0] = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
 			Check[0] = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3);
 			FIBO[0] = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5);
 			//Press = Low , No = High
 
-			//------------------------------------PART 1-------------------------------------//
-			if (SwitchState[1] == GPIO_PIN_SET
-					&& SwitchState[0] == GPIO_PIN_RESET) {
+//------------------------------------PART 1-------------------------------------//
+			if (SwitchState[1] == GPIO_PIN_SET && SwitchState[0] == GPIO_PIN_RESET)  // ถ้า Pre เป็น Hi Now เป็น Lo
+			{
 				// set = high , reset = low
 				//Change Half Period of LED 1
-				if (LED1_Half_Period == 1000) {
-					LED1_Half_Period = 500;
-				} else if (LED1_Half_Period == 500) {
+				if (LED1_Half_Period == 1000)				//NOW
+				{
+					LED1_Half_Period = 500;   				//NEXT
+				}
+				else if (LED1_Half_Period == 500)
+				{
 					LED1_Half_Period = 250;
-				} else if (LED1_Half_Period == 250) {
+				}
+				else if (LED1_Half_Period == 250)
+				{
 					LED1_Half_Period = 167;
-				} else {
+				}
+				else
+				{
 					LED1_Half_Period = 1000;
 				}
 			}
 
 
-			//------------------------------------PART 2-------------------------------------//
-			if (Check[0] == GPIO_PIN_RESET && Check[1] == GPIO_PIN_SET) {
-				if (CheckS == 0) {
+//------------------------------------PART 2-------------------------------------//
+			if (Check[0] == GPIO_PIN_RESET && Check[1] == GPIO_PIN_SET) // ถ้า  Now เป็น Lo Pre เป็น Hi
+			{
+				if (CheckS == 0)
+				{
 					HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
 					CheckS = 1;
-				} else {
+				}
+				else
+				{
 					HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
 					CheckS = 0;
 				}
 			}
 
-			//------------------------------------PART 3-------------------------------------//
-			if (FIBO[0] == GPIO_PIN_RESET && FIBO[1] == GPIO_PIN_SET) {
-				if (FIBOS == 0) {
+//------------------------------------PART 3-------------------------------------//
+			if (FIBO[0] == GPIO_PIN_RESET && FIBO[1] == GPIO_PIN_SET) // ถ้า  Now เป็น Lo Pre เป็น Hi
+			{
+				if (FIBOS == 0)
+				{
 					LED3_Half_Period = 500;
 					FIBOS = 1;
-				} else {
+				}
+				else
+				{
 					LED3_Half_Period = 3000;
 					FIBOS = 0;
 				}
 			}
-
+//----------------------Save Now State------------------------//
 			SwitchState[1] = SwitchState[0];
 			Check[1] = Check[0];
 			FIBO[1] = FIBO[0];
 		}
 
-											//Run LED
-		//------------------------------------PART 1-------------------------------------//
+//Run LED ZONE!
+//------------------------------------PART 1-------------------------------------//
 		if (HAL_GetTick() - TimeStamp >= LED1_Half_Period) //millisecond now time
 				{
-			TimeStamp = HAL_GetTick();
-			if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) == GPIO_PIN_SET) {
-				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);
-			} else {
+			TimeStamp = HAL_GetTick();       									  //บันทึกเวลาปัจจุบัน เพื่อให้รู้ว่ารอบต่อไปต้องใช้กี่วินาที
+			if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) == GPIO_PIN_SET) 			 //D1 PA9
+			{
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);            //สามารถอ่าน (HAL_GPIO_ReadPin();) PIN state ปัจจุบันได้เสมอ ไม่เกี่ยวว่าเป็น Output/Input
+			} 																	  //แต่จะเขียนได้ก็ต่อเมื่อเป็น Output เท่านั้น HAL_GPIO_Write();
+			else
+			{
 				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);
 			}
 		}
 
 		//------------------------------------PART 2-------------------------------------//
-		if (FIBOS == 1) {
+		if (FIBOS == 1)
+		{
 			if (HAL_GetTick() - TimeStamp3 >= LED3_Half_Period) //millisecond now time
 					{
 				TimeStamp3 = HAL_GetTick();
-				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET) {
+				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
+				{
 					LED3_Half_Period = 500;
 					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
-				} else {
+				}
+				else
+				{
 					LED3_Half_Period = 3000;
 					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
 				}
@@ -189,14 +218,18 @@ int main(void) {
 		}
 
 		//------------------------------------PART 3-------------------------------------//
-		if (FIBOS == 0) {
+		if (FIBOS == 0)
+		{
 			if (HAL_GetTick() - TimeStamp3 >= LED3_Half_Period) //millisecond now time
 					{
 				TimeStamp3 = HAL_GetTick();
-				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET) {
+				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
+				{
 					LED3_Half_Period = 3000;
 					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
-				} else {
+				}
+				else
+				{
 					LED3_Half_Period = 500;
 					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
 				}

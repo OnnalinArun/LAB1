@@ -27,9 +27,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  0002000c  2**0
                   CONTENTS, READONLY
- 12 .debug_info   000056e0  00000000  00000000  0002003c  2**0
+ 12 .debug_info   000056e3  00000000  00000000  0002003c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_abbrev 000010e1  00000000  00000000  0002571c  2**0
+ 13 .debug_abbrev 000010e1  00000000  00000000  0002571f  2**0
                   CONTENTS, READONLY, DEBUGGING
  14 .debug_aranges 000005d8  00000000  00000000  00026800  2**3
                   CONTENTS, READONLY, DEBUGGING
@@ -37,13 +37,13 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
  16 .debug_macro  00014701  00000000  00000000  00027318  2**0
                   CONTENTS, READONLY, DEBUGGING
- 17 .debug_line   00004fa8  00000000  00000000  0003ba19  2**0
+ 17 .debug_line   00004fb0  00000000  00000000  0003ba19  2**0
                   CONTENTS, READONLY, DEBUGGING
- 18 .debug_str    00080e6e  00000000  00000000  000409c1  2**0
+ 18 .debug_str    00080e6e  00000000  00000000  000409c9  2**0
                   CONTENTS, READONLY, DEBUGGING
- 19 .comment      0000007b  00000000  00000000  000c182f  2**0
+ 19 .comment      0000007b  00000000  00000000  000c1837  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  000016bc  00000000  00000000  000c18ac  2**2
+ 20 .debug_frame  000016bc  00000000  00000000  000c18b4  2**2
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -388,11 +388,13 @@ int main(void) {
  80004ea:	f000 f969 	bl	80007c0 <MX_USART2_UART_Init>
 	/* USER CODE BEGIN 2 */
 	//------------------------------------------------------
-	GPIO_PinState SwitchState[2];  //Now, Previous
-	uint16_t LED1_Half_Period = 1000;  // 1 Hz
+
+	//*---------สร้างตัวแปร----------*//
+	GPIO_PinState SwitchState[2];  		// Now, Previous ----> ใช้สำหรับรับค่า 0 Now, 1 Previous [GPIO_PinState สามารถเขียนเป็น uint8_t ได้ แค่ให้รับตัวเลข 0 1 ได้]
+	uint16_t LED1_Half_Period = 1000;  	// 1 Hz (mS)
  80004ee:	f44f 737a 	mov.w	r3, #1000	; 0x3e8
  80004f2:	84fb      	strh	r3, [r7, #38]	; 0x26
-	uint32_t TimeStamp = 0;
+	uint32_t TimeStamp = 0				;        //ตัวเก็บเวลา Typeเดียวกับ HAL_GetTick();
  80004f4:	2300      	movs	r3, #0
  80004f6:	623b      	str	r3, [r7, #32]
 	uint32_t ButtonTimeStamp = 0;
@@ -412,34 +414,37 @@ int main(void) {
 	uint32_t TimeStamp3 = 0;
  800050a:	2300      	movs	r3, #0
  800050c:	60fb      	str	r3, [r7, #12]
-	/* USER CODE END 2 */
-
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
+
 	while (1) {
-		HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
+//*----------HAL_GPIO_ReadPin()---------*//
+		HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10); //S1 PA10
  800050e:	f44f 6180 	mov.w	r1, #1024	; 0x400
  8000512:	4873      	ldr	r0, [pc, #460]	; (80006e0 <main+0x208>)
  8000514:	f000 fde8 	bl	80010e8 <HAL_GPIO_ReadPin>
-		HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3);
+		HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3);  //S2 PB3
  8000518:	2108      	movs	r1, #8
  800051a:	4872      	ldr	r0, [pc, #456]	; (80006e4 <main+0x20c>)
  800051c:	f000 fde4 	bl	80010e8 <HAL_GPIO_ReadPin>
-		HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5);
+		HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5);  //S3 PB5
  8000520:	2120      	movs	r1, #32
  8000522:	4870      	ldr	r0, [pc, #448]	; (80006e4 <main+0x20c>)
  8000524:	f000 fde0 	bl	80010e8 <HAL_GPIO_ReadPin>
-		if (HAL_GetTick() - ButtonTimeStamp >= 100) {
+
+//*---------------ลดความเบลอของปุ่ม---------------*//
+		if (HAL_GetTick() - ButtonTimeStamp >= 100)
  8000528:	f000 fb6a 	bl	8000c00 <HAL_GetTick>
  800052c:	4602      	mov	r2, r0
  800052e:	69fb      	ldr	r3, [r7, #28]
  8000530:	1ad3      	subs	r3, r2, r3
  8000532:	2b63      	cmp	r3, #99	; 0x63
  8000534:	d965      	bls.n	8000602 <main+0x12a>
-			ButtonTimeStamp = HAL_GetTick();
+		{
+			ButtonTimeStamp = HAL_GetTick(); 	// HAL_GetTick(); ---> อ่านเวลาที่เริ่มทำงานจนถึงปัจจุบัน(mS)
  8000536:	f000 fb63 	bl	8000c00 <HAL_GetTick>
  800053a:	61f8      	str	r0, [r7, #28]
-
+//-----------------อ่านค่าของPinต่างๆ-------------------*//
 			SwitchState[0] = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
  800053c:	f44f 6180 	mov.w	r1, #1024	; 0x400
  8000540:	4867      	ldr	r0, [pc, #412]	; (80006e0 <main+0x208>)
@@ -459,58 +464,71 @@ int main(void) {
  800055e:	4603      	mov	r3, r0
  8000560:	703b      	strb	r3, [r7, #0]
 			//Press = Low , No = High
-			if (SwitchState[1] == GPIO_PIN_SET
+
+//------------------------------------PART 1-------------------------------------//
+			if (SwitchState[1] == GPIO_PIN_SET && SwitchState[0] == GPIO_PIN_RESET)  // ถ้า Pre เป็น Hi Now เป็น Lo
  8000562:	7a7b      	ldrb	r3, [r7, #9]
  8000564:	2b01      	cmp	r3, #1
  8000566:	d11a      	bne.n	800059e <main+0xc6>
-					&& SwitchState[0] == GPIO_PIN_RESET) {
  8000568:	7a3b      	ldrb	r3, [r7, #8]
  800056a:	2b00      	cmp	r3, #0
  800056c:	d117      	bne.n	800059e <main+0xc6>
+			{
 				// set = high , reset = low
 				//Change Half Period of LED 1
-				if (LED1_Half_Period == 1000) {
+				if (LED1_Half_Period == 1000)				//NOW
  800056e:	8cfb      	ldrh	r3, [r7, #38]	; 0x26
  8000570:	f5b3 7f7a 	cmp.w	r3, #1000	; 0x3e8
  8000574:	d103      	bne.n	800057e <main+0xa6>
-					LED1_Half_Period = 500;
+				{
+					LED1_Half_Period = 500;   				//NEXT
  8000576:	f44f 73fa 	mov.w	r3, #500	; 0x1f4
  800057a:	84fb      	strh	r3, [r7, #38]	; 0x26
  800057c:	e00f      	b.n	800059e <main+0xc6>
-				} else if (LED1_Half_Period == 500) {
+				}
+				else if (LED1_Half_Period == 500)
  800057e:	8cfb      	ldrh	r3, [r7, #38]	; 0x26
  8000580:	f5b3 7ffa 	cmp.w	r3, #500	; 0x1f4
  8000584:	d102      	bne.n	800058c <main+0xb4>
+				{
 					LED1_Half_Period = 250;
  8000586:	23fa      	movs	r3, #250	; 0xfa
  8000588:	84fb      	strh	r3, [r7, #38]	; 0x26
  800058a:	e008      	b.n	800059e <main+0xc6>
-				} else if (LED1_Half_Period == 250) {
+				}
+				else if (LED1_Half_Period == 250)
  800058c:	8cfb      	ldrh	r3, [r7, #38]	; 0x26
  800058e:	2bfa      	cmp	r3, #250	; 0xfa
  8000590:	d102      	bne.n	8000598 <main+0xc0>
+				{
 					LED1_Half_Period = 167;
  8000592:	23a7      	movs	r3, #167	; 0xa7
  8000594:	84fb      	strh	r3, [r7, #38]	; 0x26
  8000596:	e002      	b.n	800059e <main+0xc6>
-				} else {
+				}
+				else
+				{
 					LED1_Half_Period = 1000;
  8000598:	f44f 737a 	mov.w	r3, #1000	; 0x3e8
  800059c:	84fb      	strh	r3, [r7, #38]	; 0x26
 				}
 			}
 
-			if (Check[0] == GPIO_PIN_RESET && Check[1] == GPIO_PIN_SET) {
+
+//------------------------------------PART 2-------------------------------------//
+			if (Check[0] == GPIO_PIN_RESET && Check[1] == GPIO_PIN_SET) // ถ้า  Now เป็น Lo Pre เป็น Hi
  800059e:	793b      	ldrb	r3, [r7, #4]
  80005a0:	2b00      	cmp	r3, #0
  80005a2:	d114      	bne.n	80005ce <main+0xf6>
  80005a4:	797b      	ldrb	r3, [r7, #5]
  80005a6:	2b01      	cmp	r3, #1
  80005a8:	d111      	bne.n	80005ce <main+0xf6>
-				if (CheckS == 0) {
+			{
+				if (CheckS == 0)
  80005aa:	69bb      	ldr	r3, [r7, #24]
  80005ac:	2b00      	cmp	r3, #0
  80005ae:	d107      	bne.n	80005c0 <main+0xe8>
+				{
 					HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
  80005b0:	2201      	movs	r2, #1
  80005b2:	2180      	movs	r1, #128	; 0x80
@@ -520,7 +538,9 @@ int main(void) {
  80005ba:	2301      	movs	r3, #1
  80005bc:	61bb      	str	r3, [r7, #24]
  80005be:	e006      	b.n	80005ce <main+0xf6>
-				} else {
+				}
+				else
+				{
 					HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
  80005c0:	2200      	movs	r2, #0
  80005c2:	2180      	movs	r1, #128	; 0x80
@@ -532,17 +552,20 @@ int main(void) {
 				}
 			}
 
-			if (FIBO[0] == GPIO_PIN_RESET && FIBO[1] == GPIO_PIN_SET) {
+//------------------------------------PART 3-------------------------------------//
+			if (FIBO[0] == GPIO_PIN_RESET && FIBO[1] == GPIO_PIN_SET) // ถ้า  Now เป็น Lo Pre เป็น Hi
  80005ce:	783b      	ldrb	r3, [r7, #0]
  80005d0:	2b00      	cmp	r3, #0
  80005d2:	d110      	bne.n	80005f6 <main+0x11e>
  80005d4:	787b      	ldrb	r3, [r7, #1]
  80005d6:	2b01      	cmp	r3, #1
  80005d8:	d10d      	bne.n	80005f6 <main+0x11e>
-				if (FIBOS == 0) {
+			{
+				if (FIBOS == 0)
  80005da:	697b      	ldr	r3, [r7, #20]
  80005dc:	2b00      	cmp	r3, #0
  80005de:	d105      	bne.n	80005ec <main+0x114>
+				{
 					LED3_Half_Period = 500;
  80005e0:	f44f 73fa 	mov.w	r3, #500	; 0x1f4
  80005e4:	827b      	strh	r3, [r7, #18]
@@ -550,7 +573,9 @@ int main(void) {
  80005e6:	2301      	movs	r3, #1
  80005e8:	617b      	str	r3, [r7, #20]
  80005ea:	e004      	b.n	80005f6 <main+0x11e>
-				} else {
+				}
+				else
+				{
 					LED3_Half_Period = 3000;
  80005ec:	f640 33b8 	movw	r3, #3000	; 0xbb8
  80005f0:	827b      	strh	r3, [r7, #18]
@@ -559,7 +584,7 @@ int main(void) {
  80005f4:	617b      	str	r3, [r7, #20]
 				}
 			}
-
+//----------------------Save Now State------------------------//
 			SwitchState[1] = SwitchState[0];
  80005f6:	7a3b      	ldrb	r3, [r7, #8]
  80005f8:	727b      	strb	r3, [r7, #9]
@@ -571,7 +596,8 @@ int main(void) {
  8000600:	707b      	strb	r3, [r7, #1]
 		}
 
-		//Run LED
+//Run LED ZONE!
+//------------------------------------PART 1-------------------------------------//
 		if (HAL_GetTick() - TimeStamp >= LED1_Half_Period) //millisecond now time
  8000602:	f000 fafd 	bl	8000c00 <HAL_GetTick>
  8000606:	4602      	mov	r2, r0
@@ -581,23 +607,26 @@ int main(void) {
  800060e:	429a      	cmp	r2, r3
  8000610:	d317      	bcc.n	8000642 <main+0x16a>
 				{
-			TimeStamp = HAL_GetTick();
+			TimeStamp = HAL_GetTick();       									  //บันทึกเวลาปัจจุบัน เพื่อให้รู้ว่ารอบต่อไปต้องใช้กี่วินาที
  8000612:	f000 faf5 	bl	8000c00 <HAL_GetTick>
  8000616:	6238      	str	r0, [r7, #32]
-			if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) == GPIO_PIN_SET) {
+			if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) == GPIO_PIN_SET) 			 //D1 PA9
  8000618:	f44f 7100 	mov.w	r1, #512	; 0x200
  800061c:	4830      	ldr	r0, [pc, #192]	; (80006e0 <main+0x208>)
  800061e:	f000 fd63 	bl	80010e8 <HAL_GPIO_ReadPin>
  8000622:	4603      	mov	r3, r0
  8000624:	2b01      	cmp	r3, #1
  8000626:	d106      	bne.n	8000636 <main+0x15e>
-				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);
+			{
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);            //สามารถอ่าน (HAL_GPIO_ReadPin();) PIN state ปัจจุบันได้เสมอ ไม่เกี่ยวว่าเป็น Output/Input
  8000628:	2200      	movs	r2, #0
  800062a:	f44f 7100 	mov.w	r1, #512	; 0x200
  800062e:	482c      	ldr	r0, [pc, #176]	; (80006e0 <main+0x208>)
  8000630:	f000 fd72 	bl	8001118 <HAL_GPIO_WritePin>
  8000634:	e005      	b.n	8000642 <main+0x16a>
-			} else {
+			} 																	  //แต่จะเขียนได้ก็ต่อเมื่อเป็น Output เท่านั้น HAL_GPIO_Write();
+			else
+			{
 				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);
  8000636:	2201      	movs	r2, #1
  8000638:	f44f 7100 	mov.w	r1, #512	; 0x200
@@ -605,10 +634,13 @@ int main(void) {
  800063e:	f000 fd6b 	bl	8001118 <HAL_GPIO_WritePin>
 			}
 		}
-		if (FIBOS == 1) {
+
+		//------------------------------------PART 2-------------------------------------//
+		if (FIBOS == 1)
  8000642:	697b      	ldr	r3, [r7, #20]
  8000644:	2b01      	cmp	r3, #1
  8000646:	d122      	bne.n	800068e <main+0x1b6>
+		{
 			if (HAL_GetTick() - TimeStamp3 >= LED3_Half_Period) //millisecond now time
  8000648:	f000 fada 	bl	8000c00 <HAL_GetTick>
  800064c:	4602      	mov	r2, r0
@@ -621,13 +653,14 @@ int main(void) {
 				TimeStamp3 = HAL_GetTick();
  8000658:	f000 fad2 	bl	8000c00 <HAL_GetTick>
  800065c:	60f8      	str	r0, [r7, #12]
-				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET) {
+				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
  800065e:	2140      	movs	r1, #64	; 0x40
  8000660:	4820      	ldr	r0, [pc, #128]	; (80006e4 <main+0x20c>)
  8000662:	f000 fd41 	bl	80010e8 <HAL_GPIO_ReadPin>
  8000666:	4603      	mov	r3, r0
  8000668:	2b01      	cmp	r3, #1
  800066a:	d108      	bne.n	800067e <main+0x1a6>
+				{
 					LED3_Half_Period = 500;
  800066c:	f44f 73fa 	mov.w	r3, #500	; 0x1f4
  8000670:	827b      	strh	r3, [r7, #18]
@@ -637,7 +670,9 @@ int main(void) {
  8000676:	481b      	ldr	r0, [pc, #108]	; (80006e4 <main+0x20c>)
  8000678:	f000 fd4e 	bl	8001118 <HAL_GPIO_WritePin>
  800067c:	e007      	b.n	800068e <main+0x1b6>
-				} else {
+				}
+				else
+				{
 					LED3_Half_Period = 3000;
  800067e:	f640 33b8 	movw	r3, #3000	; 0xbb8
  8000682:	827b      	strh	r3, [r7, #18]
@@ -649,10 +684,13 @@ int main(void) {
 				}
 			}
 		}
-		if (FIBOS == 0) {
+
+		//------------------------------------PART 3-------------------------------------//
+		if (FIBOS == 0)
  800068e:	697b      	ldr	r3, [r7, #20]
  8000690:	2b00      	cmp	r3, #0
  8000692:	f47f af3c 	bne.w	800050e <main+0x36>
+		{
 			if (HAL_GetTick() - TimeStamp3 >= LED3_Half_Period) //millisecond now time
  8000696:	f000 fab3 	bl	8000c00 <HAL_GetTick>
  800069a:	4602      	mov	r2, r0
@@ -665,13 +703,14 @@ int main(void) {
 				TimeStamp3 = HAL_GetTick();
  80006a8:	f000 faaa 	bl	8000c00 <HAL_GetTick>
  80006ac:	60f8      	str	r0, [r7, #12]
-				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET) {
+				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
  80006ae:	2140      	movs	r1, #64	; 0x40
  80006b0:	480c      	ldr	r0, [pc, #48]	; (80006e4 <main+0x20c>)
  80006b2:	f000 fd19 	bl	80010e8 <HAL_GPIO_ReadPin>
  80006b6:	4603      	mov	r3, r0
  80006b8:	2b01      	cmp	r3, #1
  80006ba:	d108      	bne.n	80006ce <main+0x1f6>
+				{
 					LED3_Half_Period = 3000;
  80006bc:	f640 33b8 	movw	r3, #3000	; 0xbb8
  80006c0:	827b      	strh	r3, [r7, #18]
@@ -681,7 +720,9 @@ int main(void) {
  80006c6:	4807      	ldr	r0, [pc, #28]	; (80006e4 <main+0x20c>)
  80006c8:	f000 fd26 	bl	8001118 <HAL_GPIO_WritePin>
  80006cc:	e71f      	b.n	800050e <main+0x36>
-				} else {
+				}
+				else
+				{
 					LED3_Half_Period = 500;
  80006ce:	f44f 73fa 	mov.w	r3, #500	; 0x1f4
  80006d2:	827b      	strh	r3, [r7, #18]
@@ -690,7 +731,7 @@ int main(void) {
  80006d6:	2140      	movs	r1, #64	; 0x40
  80006d8:	4802      	ldr	r0, [pc, #8]	; (80006e4 <main+0x20c>)
  80006da:	f000 fd1d 	bl	8001118 <HAL_GPIO_WritePin>
-		HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
+		HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10); //S1 PA10
  80006de:	e716      	b.n	800050e <main+0x36>
  80006e0:	40020000 	.word	0x40020000
  80006e4:	40020400 	.word	0x40020400
