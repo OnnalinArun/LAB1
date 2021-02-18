@@ -173,7 +173,7 @@ int main(void) {
 				}
 				else
 				{
-					LED3_Half_Period = 3000;
+					LED3_Half_Period = 1500;
 					FIBOS = 0;
 				}
 			}
@@ -212,7 +212,7 @@ int main(void) {
 				}
 				else
 				{
-					LED3_Half_Period = 3000;
+					LED3_Half_Period = 1500;
 					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
 				}
 			}
@@ -226,7 +226,7 @@ int main(void) {
 				TimeStamp3 = HAL_GetTick();
 				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
 				{
-					LED3_Half_Period = 3000;
+					LED3_Half_Period = 1500;
 					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
 				}
 				else

@@ -576,8 +576,8 @@ int main(void) {
 				}
 				else
 				{
-					LED3_Half_Period = 3000;
- 80005ec:	f640 33b8 	movw	r3, #3000	; 0xbb8
+					LED3_Half_Period = 1500;
+ 80005ec:	f240 53dc 	movw	r3, #1500	; 0x5dc
  80005f0:	827b      	strh	r3, [r7, #18]
 					FIBOS = 0;
  80005f2:	2300      	movs	r3, #0
@@ -674,8 +674,8 @@ int main(void) {
 				}
 				else
 				{
-					LED3_Half_Period = 3000;
- 800067e:	f640 33b8 	movw	r3, #3000	; 0xbb8
+					LED3_Half_Period = 1500;
+ 800067e:	f240 53dc 	movw	r3, #1500	; 0x5dc
  8000682:	827b      	strh	r3, [r7, #18]
 					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
  8000684:	2201      	movs	r2, #1
@@ -712,8 +712,8 @@ int main(void) {
  80006b8:	2b01      	cmp	r3, #1
  80006ba:	d108      	bne.n	80006ce <main+0x1f6>
 				{
-					LED3_Half_Period = 3000;
- 80006bc:	f640 33b8 	movw	r3, #3000	; 0xbb8
+					LED3_Half_Period = 1500;
+ 80006bc:	f240 53dc 	movw	r3, #1500	; 0x5dc
  80006c0:	827b      	strh	r3, [r7, #18]
 					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
  80006c2:	2200      	movs	r2, #0
