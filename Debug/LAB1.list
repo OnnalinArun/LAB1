@@ -394,7 +394,7 @@ int main(void) {
 	uint16_t LED1_Half_Period = 1000;  	// 1 Hz (mS)
  80004ee:	f44f 737a 	mov.w	r3, #1000	; 0x3e8
  80004f2:	84fb      	strh	r3, [r7, #38]	; 0x26
-	uint32_t TimeStamp = 0				;        //ตัวเก็บเวลา Typeเดียวกับ HAL_GetTick();
+	uint32_t TimeStamp = 0;			       //ตัวเก็บเวลา Typeเดียวกับ HAL_GetTick()
  80004f4:	2300      	movs	r3, #0
  80004f6:	623b      	str	r3, [r7, #32]
 	uint32_t ButtonTimeStamp = 0;
@@ -433,17 +433,18 @@ int main(void) {
  8000524:	f000 fde0 	bl	80010e8 <HAL_GPIO_ReadPin>
 
 //*---------------ลดความเบลอของปุ่ม---------------*//
-		if (HAL_GetTick() - ButtonTimeStamp >= 100)
+		if (HAL_GetTick() - ButtonTimeStamp >= 100)		//ทำให้เป็นความเร็วกดทุก 100mS --->assume >> Debounce Sw
  8000528:	f000 fb6a 	bl	8000c00 <HAL_GetTick>
  800052c:	4602      	mov	r2, r0
  800052e:	69fb      	ldr	r3, [r7, #28]
  8000530:	1ad3      	subs	r3, r2, r3
  8000532:	2b63      	cmp	r3, #99	; 0x63
  8000534:	d965      	bls.n	8000602 <main+0x12a>
-		{
-			ButtonTimeStamp = HAL_GetTick(); 	// HAL_GetTick(); ---> อ่านเวลาที่เริ่มทำงานจนถึงปัจจุบัน(mS)
+		{												//ลดความถี่ลง เพราะเราไม่สามารถกดปุ่มรัวได้ขนาดนั้น จะเช็คได้ง่ายขึ้น และเจอ  noise น้อยลง
+			ButtonTimeStamp = HAL_GetTick();  // HAL_GetTick(); ---> อ่านเวลาที่เริ่มทำงานจนถึงปัจจุบัน(mS)
  8000536:	f000 fb63 	bl	8000c00 <HAL_GetTick>
  800053a:	61f8      	str	r0, [r7, #28]
+
 //-----------------อ่านค่าของPinต่างๆ-------------------*//
 			SwitchState[0] = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
  800053c:	f44f 6180 	mov.w	r1, #1024	; 0x400
@@ -476,12 +477,12 @@ int main(void) {
 			{
 				// set = high , reset = low
 				//Change Half Period of LED 1
-				if (LED1_Half_Period == 1000)				//NOW
+				if (LED1_Half_Period == 1000)		//NOW
  800056e:	8cfb      	ldrh	r3, [r7, #38]	; 0x26
  8000570:	f5b3 7f7a 	cmp.w	r3, #1000	; 0x3e8
  8000574:	d103      	bne.n	800057e <main+0xa6>
 				{
-					LED1_Half_Period = 500;   				//NEXT
+					LED1_Half_Period = 500;   		//NEXT
  8000576:	f44f 73fa 	mov.w	r3, #500	; 0x1f4
  800057a:	84fb      	strh	r3, [r7, #38]	; 0x26
  800057c:	e00f      	b.n	800059e <main+0xc6>
@@ -513,7 +514,6 @@ int main(void) {
  800059c:	84fb      	strh	r3, [r7, #38]	; 0x26
 				}
 			}
-
 
 //------------------------------------PART 2-------------------------------------//
 			if (Check[0] == GPIO_PIN_RESET && Check[1] == GPIO_PIN_SET) // ถ้า  Now เป็น Lo Pre เป็น Hi
@@ -584,6 +584,7 @@ int main(void) {
  80005f4:	617b      	str	r3, [r7, #20]
 				}
 			}
+
 //----------------------Save Now State------------------------//
 			SwitchState[1] = SwitchState[0];
  80005f6:	7a3b      	ldrb	r3, [r7, #8]
@@ -635,7 +636,7 @@ int main(void) {
 			}
 		}
 
-		//------------------------------------PART 2-------------------------------------//
+//------------------------------------PART 2-------------------------------------//
 		if (FIBOS == 1)
  8000642:	697b      	ldr	r3, [r7, #20]
  8000644:	2b01      	cmp	r3, #1
@@ -685,7 +686,7 @@ int main(void) {
 			}
 		}
 
-		//------------------------------------PART 3-------------------------------------//
+//------------------------------------PART 3-------------------------------------//
 		if (FIBOS == 0)
  800068e:	697b      	ldr	r3, [r7, #20]
  8000690:	2b00      	cmp	r3, #0

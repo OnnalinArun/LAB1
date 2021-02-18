@@ -93,7 +93,7 @@ int main(void) {
 	//*---------สร้างตัวแปร----------*//
 	GPIO_PinState SwitchState[2];  		// Now, Previous ----> ใช้สำหรับรับค่า 0 Now, 1 Previous [GPIO_PinState สามารถเขียนเป็น uint8_t ได้ แค่ให้รับตัวเลข 0 1 ได้]
 	uint16_t LED1_Half_Period = 1000;  	// 1 Hz (mS)
-	uint32_t TimeStamp = 0;				;        //ตัวเก็บเวลา Typeเดียวกับ HAL_GetTick()
+	uint32_t TimeStamp = 0;			       //ตัวเก็บเวลา Typeเดียวกับ HAL_GetTick()
 	uint32_t ButtonTimeStamp = 0;
 	GPIO_PinState Check[2];
 	uint32_t CheckS = 0;
@@ -115,9 +115,10 @@ int main(void) {
 		HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5);  //S3 PB5
 
 //*---------------ลดความเบลอของปุ่ม---------------*//
-		if (HAL_GetTick() - ButtonTimeStamp >= 100)
-		{
-			ButtonTimeStamp = HAL_GetTick(); 	// HAL_GetTick(); ---> อ่านเวลาที่เริ่มทำงานจนถึงปัจจุบัน(mS)
+		if (HAL_GetTick() - ButtonTimeStamp >= 100)		//ทำให้เป็นความเร็วกดทุก 100mS --->assume >> Debounce Sw
+		{												//ลดความถี่ลง เพราะเราไม่สามารถกดปุ่มรัวได้ขนาดนั้น จะเช็คได้ง่ายขึ้น และเจอ  noise น้อยลง
+			ButtonTimeStamp = HAL_GetTick();  // HAL_GetTick(); ---> อ่านเวลาที่เริ่มทำงานจนถึงปัจจุบัน(mS)
+
 //-----------------อ่านค่าของPinต่างๆ-------------------*//
 			SwitchState[0] = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
 			Check[0] = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3);
@@ -146,7 +147,6 @@ int main(void) {
 					LED1_Half_Period = 1000;
 				}
 			}
-
 
 //------------------------------------PART 2-------------------------------------//
 			if (Check[0] == GPIO_PIN_RESET && Check[1] == GPIO_PIN_SET) // ถ้า  Now เป็น Lo Pre เป็น Hi
@@ -177,6 +177,7 @@ int main(void) {
 					FIBOS = 0;
 				}
 			}
+
 //----------------------Save Now State------------------------//
 			SwitchState[1] = SwitchState[0];
 			Check[1] = Check[0];
@@ -198,7 +199,7 @@ int main(void) {
 			}
 		}
 
-		//------------------------------------PART 2-------------------------------------//
+//------------------------------------PART 2-------------------------------------//
 		if (FIBOS == 1)
 		{
 			if (HAL_GetTick() - TimeStamp3 >= LED3_Half_Period) //millisecond now time
@@ -217,7 +218,7 @@ int main(void) {
 			}
 		}
 
-		//------------------------------------PART 3-------------------------------------//
+//------------------------------------PART 3-------------------------------------//
 		if (FIBOS == 0)
 		{
 			if (HAL_GetTick() - TimeStamp3 >= LED3_Half_Period) //millisecond now time
